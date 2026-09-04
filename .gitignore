@@ -1,0 +1,31 @@
+# FluxCatch - ignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+manager/.venv/
+manager/**/__pycache__/
+manager/**/*.egg-info/
+.pytest_cache/
+.mypy_cache/
+*.log
+.DS_Store
+.vscode/
+.idea/
+# pentest loot
+creds.txt
+loot/
+*.pcap
+*.key
+# OS
+Thumbs.db
