@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: fluxcatch
+Version: 0.1.0
+Summary: FluxCatch - alternative Linux à IDM (daemon local)
+Author: FluxCatch
+License: MIT
+Requires-Python: >=3.11
+Requires-Dist: aiohttp>=3.9

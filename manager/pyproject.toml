@@ -1,0 +1,26 @@
+[project]
+name = "fluxcatch"
+version = "0.1.0"
+description = "FluxCatch - alternative Linux à IDM (daemon local)"
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp>=3.9",
+]
+authors = [{name="FluxCatch"}]
+license = {text="MIT"}
+
+[project.scripts]
+fluxcatch = "fluxcatch.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fluxcatch*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["../tests"]
+pythonpath = ["."]

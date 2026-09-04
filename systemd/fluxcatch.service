@@ -1,0 +1,13 @@
+[Unit]
+Description=FluxCatch - gestionnaire de téléchargements
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=__VENV__/bin/fluxcatch serve
+Restart=on-failure
+Environment=FLUXCATCH_LOG=info
+WorkingDirectory=__ROOT__
+
+[Install]
+WantedBy=default.target

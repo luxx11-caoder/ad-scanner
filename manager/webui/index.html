@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FluxCatch — Gestionnaire</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>FluxCatch <span id="version"></span></h1>
+    <div class="statusbar">
+      <span id="pair-status" class="badge">Vérification...</span>
+      <span id="code-display" class="code"></span>
+      <span id="caps-ffmpeg" class="badge">ffmpeg: ?</span>
+      <span id="caps-ytdlp" class="badge">yt-dlp: ?</span>
+      <button id="btn-refresh" title="Rafraîchir">⟳</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Ajouter une URL</h2>
+      <div class="row">
+        <input id="input-url" type="url" placeholder="https://... vidéo.mp4 / .m3u8 / page YouTube" />
+        <select id="select-kind">
+          <option value="auto">Auto</option>
+          <option value="direct">Directe</option>
+          <option value="hls">Flux HLS/DASH</option>
+          <option value="ytdlp">YouTube / VOD (yt-dlp)</option>
+        </select>
+        <button id="btn-add" class="primary">Télécharger</button>
+      </div>
+      <p class="hint">Le type est deviné auto : .m3u8/.mpd → HLS, youtube/vimeo → yt-dlp, sinon direct.</p>
+    </section>
+
+    <section class="card">
+      <h2>Réglages</h2>
+      <div class="row">
+        <label>Dossier :
+          <input id="input-download-dir" type="text" size="40" />
+        </label>
+        <label>Modèle :
+          <input id="input-template" type="text" size="20" placeholder="{title}.{ext}" />
+        </label>
+        <button id="btn-save-settings">Enregistrer</button>
+      </div>
+      <p id="settings-msg" class="hint"></p>
+    </section>
+
+    <section class="card">
+      <h2>Tâches <span id="task-count"></span></h2>
+      <div id="tasks" class="tasks"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>FluxCatch — daemon local <code>http://127.0.0.1:8765</code> • Extension liée via code</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

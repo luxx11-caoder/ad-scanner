@@ -1,0 +1,2 @@
+[console_scripts]
+fluxcatch = fluxcatch.cli:main

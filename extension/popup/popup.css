@@ -1,0 +1,24 @@
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,sans-serif;background:#0f1115;color:#e6e8ec;width:380px}
+.wrap{padding:12px;display:grid;gap:12px}
+header{display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:16px}
+header a{color:#4f8cff;font-size:12px;text-decoration:none}
+.card{background:#1a1e27;border:1px solid #2a2f3a;border-radius:10px;padding:10px;display:grid;gap:8px}
+.card h2{margin:0;font-size:13px}
+.row{display:flex;gap:6px}
+input{flex:1;background:#0f1115;color:#e6e8ec;border:1px solid #2a2f3a;padding:6px 8px;border-radius:6px}
+button{background:#2a2f3a;color:#e6e8ec;border:1px solid #2a2f3a;padding:6px 10px;border-radius:6px;cursor:pointer}
+button.primary{background:#4f8cff;border-color:#4f8cff;color:white}
+button.small{font-size:11px;padding:4px 8px}
+button:disabled{opacity:.5}
+.hint{color:#9aa0b0;font-size:11px;margin:0}
+.candidate{border:1px solid #2a2f3a;background:#151922;border-radius:8px;padding:8px;display:grid;gap:6px}
+.candidate-title{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.candidate-meta{font-size:11px;color:#9aa0b0;word-break:break-all}
+.candidate-actions{display:flex;gap:6px}
+.badge{display:inline-block;padding:2px 6px;border-radius:999px;font-size:10px;border:1px solid #2a2f3a}
+.badge.direct{background:#1a2a4a;color:#8cb3ff}
+.badge.hls{background:#2a1f3a;color:#d3a0ff}
+.badge.ytdlp{background:#1a3a2a;color:#7be0a3}
+.badge.mse{background:#3a2f1a;color:#ffdd8c}
+.badge.recorder{background:#3a1a1a;color:#ffb4b4}

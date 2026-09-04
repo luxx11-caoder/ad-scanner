@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "FluxCatch",
+  "version": "0.1.0",
+  "description": "Attrape les vidéos non-DRM et les envoie à FluxCatch (gestionnaire local)",
+  "permissions": ["storage", "cookies", "tabs", "webRequest", "contextMenus"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content-detect.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content-hook.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    }
+  ],
+  "action": {
+    "default_title": "FluxCatch",
+    "default_popup": "popup/popup.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "minimum_chrome_version": "111",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "fluxcatch@local",
+      "strict_min_version": "121.0"
+    }
+  }
+}
