@@ -22,6 +22,17 @@ cat > "$OUT/index.html" <<'HTML'
 <h1>Fixtures locales</h1>
 <h2>MP4 direct</h2><video src="sample.mp4" controls></video>
 <h2>HLS</h2><video src="hls/index.m3u8" controls></video>
+<h2>Principal + Pub (test scoring anti-pub)</h2>
+<p>Le gros lecteur doit être marqué <b>★ Principal</b>, la petite pub en bas à droite <b>pub probable</b>.</p>
+<div style="position:relative; width:640px; height:360px; background:#000; margin:10px 0;">
+  <video id="main" src="sample.mp4" controls autoplay muted style="width:100%;height:100%;"></video>
+  <video id="ad" src="sample.mp4" muted style="position:absolute; bottom:10px; right:10px; width:120px; height:68px; border:2px solid red; opacity:0.9;" title="pub 5s"></video>
+</div>
+<script>
+  // Simule une pub courte : on coupe la pub après 5s pour imiter duration courte
+  const ad = document.getElementById('ad');
+  if (ad) { ad.play().catch(()=>{}); setTimeout(()=>{ try{ ad.pause(); ad.currentTime=0; }catch{} }, 5000); }
+</script>
 <h2>MSE blob</h2><video id="v" controls></video>
 <script>
   // MSE simple: fetch mp4 et append

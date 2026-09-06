@@ -250,6 +250,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse)=>{
       }catch(e){
         sendResponse([]);
       }
+    } else if (msg.type==="fluxcatch-analyze-player"){
+      const tabs = await fcBrowser.tabsQuery({active:true, currentWindow:true});
+      if (!tabs[0]) return sendResponse({ok:false, error:"Pas d'onglet actif"});
+      try{
+        const res = await fcBrowser.tabsSendMessage(tabs[0].id, {type:"fluxcatch-analyze-player"});
+        sendResponse(res);
+      }catch(e){
+        sendResponse({ok:false, error:String(e)});
+      }
     } else if (msg.type==="fluxcatch-pair"){
       const r = await pairWithDaemon(msg.code);
       sendResponse(r);

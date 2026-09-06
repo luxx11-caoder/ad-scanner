@@ -1,4 +1,4 @@
-// content-hook.js — monde MAIN (isolé non, page). Hook fetch/XHR + EME + performance entries
+// content-hook.js — monde MAIN (isolé non, page). Hook fetch/XHR + EME + performance entries + player tracking
 (function(){
   if (window.__fluxcatchHook) return;
   window.__fluxcatchHook = true;
@@ -11,6 +11,30 @@
       window.postMessage(payload, "*");
     }catch{}
   }
+  function notifyPlayer(url, kind){
+    try{
+      const vids = document.querySelectorAll("video");
+      let idx = -1;
+      let best = null;
+      // trouve la vidéo qui a déclenché (la plus proche du viewport ou en lecture)
+      for (let i=0;i<vids.length;i++){
+        const r = vids[i].getBoundingClientRect();
+        const area = r.width * r.height;
+        if (!best || area > best.area) best = {i, area, el: vids[i]};
+        // si l'URL correspond à currentSrc, c'est elle
+        try{
+          const src = vids[i].currentSrc || vids[i].src || "";
+          if (src && url && src === url) { idx = i; break; }
+        }catch{}
+      }
+      if (idx === -1 && best) idx = best.i;
+      const el = idx >=0 ? vids[idx] : null;
+      const w = el ? el.videoWidth || el.clientWidth : 0;
+      const h = el ? el.videoHeight || el.clientHeight : 0;
+      const rect = el ? el.getBoundingClientRect() : {width:0,height:0};
+      window.postMessage({type:"fluxcatch-player-src", url, kind: kind||"src", videoIndex: idx, w, h, vw: rect.width, vh: rect.height}, "*");
+    }catch{}
+  }
 
   // Detect EME
   try{
@@ -20,6 +44,51 @@
         window.__fluxcatchEme = true;
         try{ window.postMessage({type:"fluxcatch-eme", eme:true}, "*"); }catch{}
         return orig.apply(this, args);
+      };
+    }
+  }catch{}
+
+  // Hook player src / play pour lier flux ↔ élément
+  try{
+    const proto = HTMLMediaElement.prototype;
+    const descSrc = Object.getOwnPropertyDescriptor(proto, "src");
+    if (descSrc && descSrc.set){
+      Object.defineProperty(proto, "src", {
+        get: descSrc.get,
+        set: function(v){
+          try{ if (v) notifyPlayer(v, "src-set"); }catch{}
+          return descSrc.set.call(this, v);
+        },
+        configurable: true
+      });
+    }
+    const origPlay = proto.play;
+    if (origPlay){
+      proto.play = function(...args){
+        try{
+          const src = this.currentSrc || this.src || "";
+          if (src) notifyPlayer(src, "play");
+          else {
+            const s = this.querySelector("source");
+            if (s && s.src) notifyPlayer(s.src, "play-source");
+          }
+          // notifie aussi le manifest en cours si blob/MSE
+          if (this.src && this.src.startsWith("blob:")) {
+            notifyPlayer(this.src, "play-blob");
+          }
+        }catch{}
+        return origPlay.apply(this, args);
+      };
+    }
+    // intercepte load() aussi
+    const origLoad = proto.load;
+    if (origLoad){
+      proto.load = function(...a){
+        try{
+          const src = this.currentSrc || this.src || "";
+          if (src) notifyPlayer(src, "load");
+        }catch{}
+        return origLoad.apply(this, a);
       };
     }
   }catch{}
@@ -45,14 +114,12 @@
         try{
           const url = typeof input === "string" ? input : input?.url;
           if (url && (isMediaUrl(url))){
-            // try to read content-type without consuming body
             const ct = resp.headers.get("content-type") || "";
             const cl = resp.headers.get("content-length");
             if (isMediaUrl(url) || isMediaContentType(ct)){
               notify(url, ct, cl ? parseInt(cl,10) : null);
             }
           } else {
-            // also check content-type even if URL not media (could be blob)
             const ct = resp.headers.get("content-type") || "";
             if (isMediaContentType(ct)){
               const url2 = typeof input === "string" ? input : input?.url;
@@ -69,14 +136,13 @@
   try{
     const origOpen = XMLHttpRequest.prototype.open;
     const origSend = XMLHttpRequest.prototype.send;
-    const origGetHeader = XMLHttpRequest.prototype.getResponseHeader;
     XMLHttpRequest.prototype.open = function(method, url, ...rest){
       this.__fluxcatchUrl = url;
       return origOpen.call(this, method, url, ...rest);
     };
     XMLHttpRequest.prototype.send = function(...args){
       this.addEventListener("readystatechange", function(){
-        if (this.readyState === 2){ // HEADERS_RECEIVED
+        if (this.readyState === 2){
           try{
             const ct = this.getResponseHeader("content-type") || "";
             const url = this.__fluxcatchUrl || this.responseURL;
@@ -107,7 +173,6 @@
       }catch{}
     };
     setInterval(checkPerf, 3000);
-    // also observe?
     window.addEventListener("load", checkPerf);
   }catch{}
 })();

@@ -25,9 +25,14 @@
     </div>
 
     <div id="candidates-section" class="card">
-      <h2>Candidats sur cette page</h2>
-      <div id="candidates"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <h2 style="margin:0;">Candidats sur cette page</h2>
+        <button id="btn-analyze" class="small" title="Lance la vidéo principale pour révéler son flux (HLS)">▶ Détecter le flux</button>
+      </div>
+      <p class="hint" style="margin:6px 0 0;">Le vrai lecteur est marqué ★ Principal, les pubs en bas.</p>
+      <div id="candidates" style="margin-top:8px;"></div>
       <p id="no-candidates" class="hint" style="display:none;">Aucune vidéo détectée.</p>
+      <p id="analyze-msg" class="hint"></p>
     </div>
 
     <div id="record-section" class="card">
