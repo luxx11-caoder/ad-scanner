@@ -1,4 +1,4 @@
-// background.js — service worker MV3 (Chromium) / background (Firefox)
+// background.js - service worker MV3 (Chromium) / background (Firefox)
 // Load shim: include api-shim inline? Since we use importless, inline helper here.
 
 // Shim minimal promisses
@@ -75,7 +75,7 @@ async function getPaired() {
   return !!d.paired;
 }
 
-// Badge — compatible Chromium (chrome.action) et Firefox event page (browser.action)
+// Badge - compatible Chromium (chrome.action) et Firefox event page (browser.action)
 function updateBadge(tabId, count){
   candidatesPerTab.set(tabId, count);
   try{
