@@ -62,8 +62,10 @@ Config XDG:
 
 ### 2. Extension
 
-- **Chromium**: `chrome://extensions` → Mode développeur → Charger l'extension non empaquetée → dossier `extension/`
-- **Firefox**: `about:debugging#/runtime/this-firefox` → Charger un module temporaire → `extension/manifest.json` (pérenne : `web-ext` / .xpi signé à prévoir)
+- **Chromium**: `chrome://extensions` → Mode développeur → Charger l'extension non empaquetée → dossier `extension/` (source de vérité)
+- **Firefox**: `about:debugging#/runtime/this-firefox` → Charger un module temporaire → `extension-firefox/manifest.json` (généré via `scripts/make_firefox_addon.sh` → re-générer après chaque modif du code de `extension/` ; temporaire → Recharger après chaque modif et au reboot Firefox) (pérenne : `web-ext` / .xpi signé à prévoir)
+
+> Firefox ne supporte pas `background.service_worker` (event page `background.scripts` requise) : `extension/manifest.json` est pour Chromium, `extension-firefox/manifest.json` est généré automatiquement. Ne modifiez jamais `extension-firefox/` à la main.
 
 Puis dans le popup : saisir le **code de liaison** affiché par `fluxcatch serve` → bouton *Lier*.
 

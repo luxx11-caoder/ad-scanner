@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FluxCatch</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>FluxCatch</h1>
+      <a id="open-manager" href="http://127.0.0.1:8765" target="_blank">Ouvrir le gestionnaire</a>
+    </header>
+
+    <div id="pair-section" class="card">
+      <p>Liaison au daemon local</p>
+      <div class="row">
+        <input id="pair-code" placeholder="Code à 8 caractères" maxlength="8" />
+        <button id="btn-pair">Lier</button>
+      </div>
+      <p id="pair-msg" class="hint"></p>
+      <p class="hint">Lancez <code>fluxcatch serve</code> et copiez le code affiché.</p>
+      <button id="btn-unpair" class="small">Dissocier</button>
+    </div>
+
+    <div id="candidates-section" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <h2 style="margin:0;">Candidats sur cette page</h2>
+        <button id="btn-analyze" class="small" title="Lance la vidéo principale pour révéler son flux (HLS)">▶ Détecter le flux</button>
+      </div>
+      <p class="hint" style="margin:6px 0 0;">Le vrai lecteur est marqué ★ Principal, les pubs en bas.</p>
+      <div id="candidates" style="margin-top:8px;"></div>
+      <p id="no-candidates" class="hint" style="display:none;">Aucune vidéo détectée.</p>
+      <p id="analyze-msg" class="hint"></p>
+    </div>
+
+    <div id="record-section" class="card">
+      <h2>Enregistrement</h2>
+      <p class="hint">Si la vidéo est en MSE (blob) non-DRM, vous pouvez l'enregistrer.</p>
+      <button id="btn-record-start">▶ Enregistrer</button>
+      <button id="btn-record-stop" disabled>■ Stop</button>
+      <p id="record-msg" class="hint"></p>
+    </div>
+
+    <div id="status" class="hint"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
