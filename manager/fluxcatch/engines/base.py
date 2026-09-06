@@ -62,6 +62,12 @@ def sanitize_filename(name: str, max_len: int = 200) -> str:
     return name
 
 def derive_filename(task: dict, final_url: str | None = None, mime: str | None = None, content_disposition: str | None = None) -> str:
+    # Garde-fou : refuse les URLs page .php/.html sans CD et avec mime html (err_not_media)
+    if not content_disposition and final_url:
+        low_path = final_url.lower().split("?")[0].split("#")[0]
+        if low_path.endswith((".php", ".html", ".htm", ".aspx", ".jsp", ".cgi")):
+            if mime and ("text/html" in mime.lower() or "application/xhtml" in mime.lower()):
+                raise ValueError("err_not_media")
     # 1. Content-Disposition
     if content_disposition:
         # parse filename* or filename

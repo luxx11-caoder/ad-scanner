@@ -80,10 +80,25 @@ async def run(task: dict, store, report: Callable, session: aiohttp.ClientSessio
                     if resp.status >= 500:
                         raise aiohttp.ClientResponseError(resp.request_info, resp.history, status=resp.status)
 
-                    # Determine filename if not yet
-                    mime = resp.headers.get("Content-Type")
+                    # Détection page HTML au lieu de média (fix #1)
+                    mime = resp.headers.get("Content-Type") or ""
                     cd = resp.headers.get("Content-Disposition")
                     final_url = str(resp.url)
+                    mime_low = mime.lower()
+                    if "text/html" in mime_low or "application/xhtml" in mime_low or "text/xml" in mime_low and "video" not in mime_low:
+                        # Vérifie aussi l'extension suspecte .php/.html sans Content-Disposition
+                        store.set_error(tid, "err_not_media")
+                        return
+                    # Garde-fou : URL se terminant par .php/.html sans CD = page, pas un média
+                    if not cd:
+                        try:
+                            from urllib.parse import urlparse
+                            p = urlparse(final_url).path.lower()
+                            if p.endswith((".php", ".html", ".htm", ".aspx", ".jsp")) and "video" not in mime_low and "octet-stream" not in mime_low:
+                                store.set_error(tid, "err_not_media")
+                                return
+                        except Exception:
+                            pass
 
                     if target_path is None or part_path is None:
                         filename = derive_filename(task, final_url=final_url, mime=mime, content_disposition=cd)
@@ -218,6 +233,12 @@ async def run(task: dict, store, report: Callable, session: aiohttp.ClientSessio
             except asyncio.CancelledError:
                 raise
             except Exception as e:
+                if "err_not_media" in str(e):
+                    try:
+                        store.set_error(tid, "err_not_media")
+                    except Exception:
+                        pass
+                    return
                 # network errors retry
                 if attempt < max_attempts and not isinstance(e, (ValueError,)):
                     # check if task was paused/canceled -> don't retry

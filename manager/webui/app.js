@@ -24,6 +24,17 @@ function typeFR(k) {
   const m = {direct:"Directe", hls:"Flux HLS", ytdlp:"YouTube·VOD", recorder:"Enregistrement", browser_proxy:"Relais navigateur"};
   return m[k] || k;
 }
+function errorFR(e){
+  if(!e) return "";
+  if(e.includes("err_not_media")) return "Page web détectée (pas un fichier vidéo) — utilisez yt-dlp ou HLS";
+  if(e.includes("err_forbidden")) return "Accès refusé (403) — essayez Forcer yt-dlp";
+  if(e.includes("err_gone")) return "Fichier introuvable (404)";
+  if(e.includes("err_drm")) return "Protégé DRM — non capturable";
+  if(e.includes("err_empty")) return "Fichier vide";
+  if(e.includes("err_space")) return "Espace disque insuffisant";
+  if(e.includes("err_network")) return "Erreur réseau";
+  return e;
+}
 
 async function apiGet(path) {
   const r = await fetch(path);
@@ -84,7 +95,8 @@ function renderTasks(){
     const hasTotal = t.size_total != null;
     const barCls = t.status==="done" ? "task-bar done" : (t.status==="error" ? "task-bar error" : "task-bar");
     const speed = t._speed ? formatSpeed(t._speed) : "";
-    const err = t.error ? `<span title="${t.error}" class="badge err">${t.error}</span>` : "";
+    const errLabel = t.error ? errorFR(t.error) : "";
+    const err = t.error ? `<span title="${t.error}" class="badge err">${errLabel}</span>` : "";
     const div = document.createElement("div");
     div.className = "task";
     div.innerHTML = `
@@ -137,6 +149,8 @@ function detectKind(url){
   const low = url.toLowerCase();
   if (low.includes(".m3u8") || low.includes(".mpd")) return "hls";
   if (/(youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com|dai\.ly)/i.test(url)) return "ytdlp";
+  // Page web avec vidéo embarquée (pas un fichier direct) → ytdlp générique
+  if (low.includes("view_video.php") || low.includes("viewkey=") || low.includes("/video/") || /\.(php|html|htm|aspx|jsp)(\?|#|$)/i.test(low)) return "ytdlp";
   return "direct";
 }
 

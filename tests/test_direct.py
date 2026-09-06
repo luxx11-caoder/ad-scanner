@@ -166,3 +166,36 @@ async def test_403_handling(tmp_dirs, store):
     assert "err_forbidden" in data["error"]
     await c.close(); await server.close()
     await fclient.close(); await fserver.close()
+
+@pytest.mark.asyncio
+async def test_html_not_media(tmp_dirs, store):
+    """Page HTML (.php) ne doit pas être sauvée comme vidéo → err_not_media (fix #1)."""
+    from aiohttp import web
+    async def handler(request):
+        # Simule une page Pornhub view_video.php qui renvoie HTML
+        return web.Response(body=b"<html><title>Fake page</title></html>", headers={"Content-Type":"text/html; charset=utf-8", "Content-Length":"38"})
+    app = web.Application()
+    app.router.add_get("/view_video.php", handler)
+    fserver = TestServer(app); await fserver.start_server()
+    fclient = TestClient(fserver); await fclient.start_server()
+    url = str(fserver.make_url("/view_video.php?viewkey=abc123"))
+    from fluxcatch.server import create_app
+    import fluxcatch.pairing as pairing
+    daemon_app = create_app(store)
+    server = TestServer(daemon_app); await server.start_server()
+    c = TestClient(server); await c.start_server()
+    origin="chrome-extension://htmltest"
+    pairing.add_origin(origin)
+    headers={"Origin":origin}
+    resp = await c.request("POST","/api/tasks", json={"kind":"direct","url":url,"title":"view_video.php"}, headers=headers)
+    tid=(await resp.json())["id"]
+    for _ in range(30):
+        await asyncio.sleep(0.2)
+        resp = await c.request("GET", f"/api/tasks/{tid}", headers=headers)
+        data = await resp.json()
+        if data["status"]=="error":
+            break
+    assert data["status"]=="error", f"attendu err_not_media, got {data}"
+    assert "err_not_media" in data["error"]
+    await c.close(); await server.close()
+    await fclient.close(); await fserver.close()

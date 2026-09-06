@@ -44,29 +44,34 @@ function renderCandidates(list){
     const div = document.createElement("div");
     div.className="candidate";
     const isDrm = c.drm;
+    const isPageLike = c.url.toLowerCase().includes("view_video.php") || c.url.toLowerCase().includes("viewkey=");
     div.innerHTML=`
       <div class="candidate-title" title="${c.url}">${(c.title||c.url).slice(0,80)}</div>
-      <div class="candidate-meta"><span class="badge ${c.type}">${typeLabel(c.type)}</span> ${c.mime||""} ${c.sizeHint? Math.round(c.sizeHint/1024)+" Ko":""}</div>
+      <div class="candidate-meta"><span class="badge ${c.type}">${typeLabel(c.type)}</span> ${c.mime||""} ${c.sizeHint? Math.round(c.sizeHint/1024)+" Ko":""} ${isPageLike? '<span class="badge" title="URL de page détectée">page</span>':''}</div>
       <div class="candidate-meta" style="font-size:10px;">${c.url.slice(0,120)}</div>
-      ${isDrm ? `<div class="badge recorder">non capturable (protégé DRM)</div>` : `<div class="candidate-actions"><button data-url="${encodeURIComponent(c.url)}" data-type="${c.type}" class="primary">Télécharger</button></div>`}
+      ${isDrm ? `<div class="badge recorder">non capturable (protégé DRM)</div>` : `<div class="candidate-actions"><button data-url="${encodeURIComponent(c.url)}" data-type="${c.type}" class="primary">Télécharger</button><button data-url="${encodeURIComponent(c.url)}" data-force="ytdlp" class="small" title="Forcer le téléchargement via yt-dlp (page web)">Forcer yt-dlp</button></div>`}
     `;
     cont.appendChild(div);
   }
   cont.querySelectorAll("button[data-url]").forEach(btn=>{
+    const isForce = btn.dataset.force === "ytdlp";
     btn.addEventListener("click", async ()=>{
       btn.disabled=true;
       const url = decodeURIComponent(btn.dataset.url);
-      const type = btn.dataset.type;
       const candidate = list.find(x=>x.url===url);
       if (!candidate) return;
-      // if mse, suggest recording instead
-      if (candidate.type==="mse"){
+      if (!isForce && candidate.type==="mse"){
         document.getElementById("record-msg").textContent="Flux MSE détecté — utilisez Enregistrement ci-dessous";
         btn.disabled=false;
         return;
       }
+      let toSend = candidate;
+      if (isForce) {
+        // Force en ytdlp : on envoie la page comme source
+        toSend = {...candidate, type:"ytdlp", page: candidate.page || candidate.url, url: candidate.url};
+      }
       btn.textContent="…";
-      const res = await chrome.runtime.sendMessage({type:"fluxcatch-create-task", candidate});
+      const res = await chrome.runtime.sendMessage({type:"fluxcatch-create-task", candidate: toSend});
       if (res && res.ok){
         btn.textContent="✓ Envoyé";
         document.getElementById("status").textContent="Tâche créée: "+res.id;

@@ -316,6 +316,18 @@ async function createTaskFromCandidate(cand, tab){
   }
   else kind="direct";
 
+  // Garde-fou #1 : si direct mais URL ressemble à une page (pas d'extension média, .php, viewkey), forcer ytdlp
+  if (kind === "direct") {
+    const urlLower = (cand.url || "").toLowerCase();
+    const hasMediaExt = /\.(mp4|webm|m4v|mov|mkv|ts|flv|ogv|avi|m3u8|mpd)(\?|#|$)/i.test(urlLower);
+    const looksLikePage = urlLower.includes("view_video.php") || urlLower.includes("viewkey=") || /\/video\/show\//i.test(urlLower) || (!hasMediaExt && !cand.mime?.toLowerCase().startsWith("video/") && !cand.mime?.toLowerCase().startsWith("audio/"));
+    const isPhpHtml = /\.(php|html|htm|aspx|jsp)(\?|#|$)/i.test(urlLower) && !hasMediaExt;
+    if (looksLikePage || isPhpHtml) {
+      kind = "ytdlp";
+      if (!cand.page) cand.page = cand.url;
+    }
+  }
+
   // Build headers with cookies
   let urlForCookies = cand.url;
   if (kind==="ytdlp") urlForCookies = cand.page || cand.url;
